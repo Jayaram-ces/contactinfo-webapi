@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContactInfoApi", "ContactInfoApi\ContactInfoApi.csproj", "{FDA87E6B-503C-404D-91FD-F42839F84C39}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FDA87E6B-503C-404D-91FD-F42839F84C39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDA87E6B-503C-404D-91FD-F42839F84C39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDA87E6B-503C-404D-91FD-F42839F84C39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDA87E6B-503C-404D-91FD-F42839F84C39}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B8F9EFDF-739A-45F5-A6EE-F9E28AA869A3}
+	EndGlobalSection
+EndGlobal
