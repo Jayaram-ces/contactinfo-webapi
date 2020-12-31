@@ -1,3 +1,4 @@
+using ContactInfoApi.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -27,6 +28,7 @@ namespace ContactInfoApi
         {
             services.AddDbContext<ContactInfoContext>(opt => opt.UseInMemoryDatabase("ContactDB"));
             services.AddControllers();
+            services.AddScoped<IContactReposistory, ContactReposistory>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

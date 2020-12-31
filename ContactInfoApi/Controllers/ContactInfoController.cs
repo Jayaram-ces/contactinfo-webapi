@@ -1,4 +1,5 @@
 ﻿using ContactInfoApi.Model;
+using ContactInfoApi.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -12,110 +13,149 @@ namespace ContactInfoApi.Controllers
     [Route("[controller]")]
     public class ContactInfoController : ControllerBase
     {
-        private readonly ContactInfoContext _context;
+        private IContactReposistory contactReposistory;
 
-        public ContactInfoController(ContactInfoContext context)
+        public ContactInfoController(IContactReposistory _contactReposistory)
         {
-            _context = context;
-            if (!_context.Contacts.Any())
+            contactReposistory = _contactReposistory;
+            
+        }
+
+        [HttpPost]
+        [Route("AddContact")]
+        public async Task<IActionResult> AddContact([FromBody] ContactInfo contact)
+        {
+            if (ModelState.IsValid)
             {
-                AddTestData();
+                try
+                {
+                    if (contact?.EmailId == null)
+                        return BadRequest("The email address is required");
+                    var contactId = await contactReposistory.AddContact(contact);
+                    if (contactId > 0)
+                    {
+                        return Ok("Contact added successfully");
+                    }
+                    else
+                    {
+                        return NotFound();
+                    }
+                }
+                catch (Exception ex)
+                {
+
+                    return BadRequest();
+                }
             }
+            return BadRequest();
         }
 
-        private void AddTestData()
-        {
-            var contact1 = new ContactInfo() { Id = 1, FirstName = "Willam", LastName = "Shakes", MobileNumber = "+4142353246", EmailId = "Willam@outlook.com" };
-            var contact2 = new ContactInfo() { Id = 2, FirstName = "Johnny", LastName = "Deep", MobileNumber = "+9842353246", EmailId = "Johnny@outlook.com" };
-            var contact3 = new ContactInfo() { Id = 3, FirstName = "Vin", LastName = "Disel", MobileNumber = "+3142353246", EmailId = "Vin@outlook.com" };
-            var contact4 = new ContactInfo() { Id = 4, FirstName = "Robert", LastName = "Downey", MobileNumber = "+7142353246", EmailId = "Robert@outlook.com" };
-            var contact5 = new ContactInfo() { Id = 5, FirstName = "Will", LastName = "Buyers", MobileNumber = "+9142353246", EmailId = "Will@outlook.com" };
-            _context.Add(contact1);
-            _context.Add(contact2);
-            _context.Add(contact3);
-            _context.Add(contact4);
-            _context.Add(contact5);
-            _context.SaveChanges();
-
-        }
-        // GET: contactinfo
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ContactInfo>>> GetContacts()
+        [Route("GetContacts")]
+        public async Task<IActionResult> GetContacts()
         {
-            return await _context.Contacts.ToListAsync();
-        }
-
-        // GET: contactinfo/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ContactInfo>> GetContact(long id)
-        {
-            var contact = await _context.Contacts.FindAsync(id);
-
-            if (contact == null)
+            try
             {
-                return NotFound();
-            }
+                var contacts = await contactReposistory.GetContacts();
+                if (contacts == null)
+                {
+                    return NotFound();
+                }
 
-            return contact;
+                return Ok(contacts);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
 
-        // PUT: contactinfo/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutContact(long id, ContactInfo contact)
+        [HttpGet]
+        [Route("GetContact")]
+        public async Task<IActionResult> GetContact(int? id)
         {
-            if (id != contact.Id)
+            if (id == null)
             {
                 return BadRequest();
             }
 
-            _context.Entry(contact).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-                return Created("UpdateContact", "Contact updated Successfully");
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ContactExists(id))
+                var contact = await contactReposistory.GetContact(id);
+
+                if (contact == null)
                 {
                     return NotFound();
                 }
-                else
+
+                return Ok(contact);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpPut]
+        [Route("UpdateContact")]
+        public async Task<IActionResult> UpdateContact(int? id, [FromBody] ContactInfo contact)
+        {
+            if(id == null)
+            {
+                return BadRequest("Please provide valid Id to update the contact.");
+            }
+
+            if (id != contact.Id)
+            {
+                return BadRequest("Contact was not found in database. Please check the given data.");
+            }
+            if (ModelState.IsValid)
+            {
+                try
                 {
-                    throw;
+                    await contactReposistory.UpdateContact(contact);
+
+                    return Ok("Contact updated successfully");
+                }
+                catch (Exception ex)
+                {
+                    if (ex.GetType().FullName == "Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException")
+                    {
+                        return NotFound();
+                    }
+
+                    return BadRequest();
                 }
             }
 
-            return NoContent();
+            return BadRequest();
         }
 
-        // POST: contactinfo
-        [HttpPost]
-        public async Task<ActionResult<ContactInfo>> PostContact(ContactInfo contact)
+        [HttpDelete]
+        [Route("DeleteContact")]
+        public async Task<IActionResult> DeleteContact(int? id)
         {
-            _context.Contacts.Add(contact);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction("GetContact", new { id = contact.Id }, contact);
-        }
+            int result = 0;
 
-        // DELETE: contactinfo/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<ContactInfo>> DeleteContact(long id)
-        {
-            var contact = await _context.Contacts.FindAsync(id);
-            if (contact == null)
+            if (id == null)
             {
-                return NotFound();
+                return BadRequest();
             }
-            _context.Contacts.Remove(contact);
-            await _context.SaveChangesAsync();
-            return Created("DeleteContact", "Contact Deleted Successfully"); ;
-        }
 
-        private bool ContactExists(long id)
-        {
-            return _context.Contacts.Any(e => e.Id == id);
+            try
+            {
+                result = await contactReposistory.DeleteContact(id);
+                if (result == 0)
+                {
+                    return NotFound();
+                }
+                return Ok("Contact Deleted successfully");
+            }
+            catch (Exception)
+            {
+
+                return BadRequest();
+            }
         }
     }
 }
