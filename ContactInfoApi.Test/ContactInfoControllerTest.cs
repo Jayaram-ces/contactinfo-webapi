@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -73,17 +74,11 @@ namespace ContactInfoApi.Test
 
             var okResult = data.Should().BeOfType<OkObjectResult>().Subject;
             var contact = okResult.Value.Should().BeAssignableTo<List<ContactInfo>>().Subject;
-
-            Assert.Equal("Willam", contact[0].FirstName);
-            Assert.Equal("Shakes", contact[0].LastName);
-            Assert.Equal("+4142353246", contact[0].MobileNumber);
-            Assert.Equal("Willam@outlook.com", contact[0].EmailId);
-
-
-            Assert.Equal("Johnny", contact[1].FirstName);
-            Assert.Equal("Deep", contact[1].LastName);
-            Assert.Equal("+9842353246", contact[1].MobileNumber);
-            Assert.Equal("Johnny@outlook.com", contact[1].EmailId);
+            var expectedContact = DummyContactInfoDBInitializer.Contacts.FirstOrDefault();
+            Assert.Equal(expectedContact.FirstName, contact[0].FirstName);
+            Assert.Equal(expectedContact.LastName, contact[0].LastName);
+            Assert.Equal(expectedContact.MobileNumber, contact[0].MobileNumber);
+            Assert.Equal(expectedContact.EmailId, contact[0].EmailId);
         }
         #endregion
 
@@ -93,8 +88,9 @@ namespace ContactInfoApi.Test
         public async void Task_GetContactById_Return_OkResult()
         {
             //Arrange  
+            var getContact = DummyContactInfoDBInitializer.Contacts.FirstOrDefault();
             var controller = new ContactInfoController(repository);
-            var id = 2;
+            var id = getContact.Id;
 
             //Act  
             var data = await controller.GetContact(id);
@@ -108,7 +104,7 @@ namespace ContactInfoApi.Test
         {
             //Arrange  
             var controller = new ContactInfoController(repository);
-            var id = 6;
+            var id = 6421;
 
             //Act  
             var data = await controller.GetContact(id);
@@ -135,8 +131,9 @@ namespace ContactInfoApi.Test
         public async void Task_GetContactById_MatchResult()
         {
             //Arrange  
+            var getContact = DummyContactInfoDBInitializer.Contacts.FirstOrDefault();
             var controller = new ContactInfoController(repository);
-            int? id = 1;
+            int? id = getContact.Id;
 
             //Act  
             var data = await controller.GetContact(id);
@@ -146,11 +143,11 @@ namespace ContactInfoApi.Test
 
             var okResult = data.Should().BeOfType<OkObjectResult>().Subject;
             var contact = okResult.Value.Should().BeAssignableTo<ContactInfo>().Subject;
-
-            Assert.Equal("Willam", contact.FirstName);
-            Assert.Equal("Shakes", contact.LastName);
-            Assert.Equal("+4142353246", contact.MobileNumber);
-            Assert.Equal("Willam@outlook.com", contact.EmailId);
+            var expectedContact = DummyContactInfoDBInitializer.Contacts.FirstOrDefault();
+            Assert.Equal(expectedContact.FirstName, contact.FirstName);
+            Assert.Equal(expectedContact.LastName, contact.LastName);
+            Assert.Equal(expectedContact.MobileNumber, contact.MobileNumber);
+            Assert.Equal(expectedContact.EmailId, contact.EmailId);
         }
 
         #endregion
@@ -162,7 +159,7 @@ namespace ContactInfoApi.Test
         {
             //Arrange  
             var controller = new ContactInfoController(repository);
-            var contact = new ContactInfo() { Id = 7, FirstName = "Daniel", LastName = "Bajaji", MobileNumber = "+8142353246", EmailId = "Daniel@outlook.com" };
+            ContactInfo contact = new Fixture().Create<ContactInfo>();
 
             //Act  
             var data = await controller.AddContact(contact);
@@ -176,7 +173,8 @@ namespace ContactInfoApi.Test
         {
             //Arrange  
             var controller = new ContactInfoController(repository);
-            ContactInfo contact = new ContactInfo() { Id = 6, FirstName = "Christopher", LastName = "Nolan", MobileNumber = "+8142353246"};
+            ContactInfo contact = new Fixture().Create<ContactInfo>();
+            contact.EmailId = null;
 
             //Act              
             var data = await controller.AddContact(contact);
@@ -192,7 +190,7 @@ namespace ContactInfoApi.Test
         {
             //Arrange  
             var controller = new ContactInfoController(repository);
-            var contact = new ContactInfo() { Id = 6, FirstName = "Christopher", LastName = "Nolan", MobileNumber = "+8142353246", EmailId = "chris@outlook.com" };
+            var contact = new Fixture().Create<ContactInfo>();
 
             //Act  
             var data = await controller.AddContact(contact);
@@ -211,8 +209,9 @@ namespace ContactInfoApi.Test
         public async void Task_UpdateContact_ValidData_Return_OkResult()
         {
             //Arrange  
+            var getContact = DummyContactInfoDBInitializer.Contacts.ElementAtOrDefault(3);
             var controller = new ContactInfoController(repository);
-            var id = 2;
+            var id = getContact.Id;
 
             //Act  
             var existingContact = await controller.GetContact(id);
@@ -227,7 +226,7 @@ namespace ContactInfoApi.Test
             UpdateContact.EmailId = result.EmailId;
 
 
-            var updatedData = await controller.UpdateContact(result.Id, UpdateContact);
+            var updatedData = await controller.UpdateContact(id, UpdateContact);
 
             //Assert  
             Assert.IsType<OkObjectResult>(updatedData);
@@ -236,9 +235,10 @@ namespace ContactInfoApi.Test
         [Fact]
         public async void Task_UpdateContact_InvalidData_Return_BadRequest()
         {
-            //Arrange  
+            //Arrange 
+            var getContact = DummyContactInfoDBInitializer.Contacts.ElementAtOrDefault(3);
             var controller = new ContactInfoController(repository);
-            var id = 2;
+            var id = getContact.Id;
 
             //Act  
             var existingContact = await controller.GetContact(id);
@@ -262,9 +262,10 @@ namespace ContactInfoApi.Test
         [Fact]
         public async void Task_UpdateContact_NullId_Return_BadRequest()
         {
-            //Arrange  
+            //Arrange
+            var getContact = DummyContactInfoDBInitializer.Contacts.ElementAtOrDefault(2);
             var controller = new ContactInfoController(repository);
-            var id = 2;
+            var id = getContact.Id;
 
             //Act  
             var existingContact = await controller.GetContact(id);
@@ -293,8 +294,9 @@ namespace ContactInfoApi.Test
         public async void Task_DeleteContact_Return_OkResult()
         {
             //Arrange  
+            var getContact = DummyContactInfoDBInitializer.Contacts.LastOrDefault();
             var controller = new ContactInfoController(repository);
-            var id = 5;
+            var id = getContact.Id;
 
             //Act  
             var data = await controller.DeleteContact(id);
@@ -308,7 +310,7 @@ namespace ContactInfoApi.Test
         {
             //Arrange  
             var controller = new ContactInfoController(repository);
-            var id = 5;
+            var id = 5242;
 
             //Act  
             var data = await controller.DeleteContact(id);
