@@ -26,7 +26,9 @@ namespace ContactInfoApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ContactInfoContext>(opt => opt.UseInMemoryDatabase("ContactDB"));
+            //services.AddDbContext<ContactInfoContext>(opt => opt.UseInMemoryDatabase("ContactDB"));
+            string _connectionString = Configuration.GetConnectionString("ContactContext");
+            services.AddDbContext<ContactInfoContext>(options => options.UseMySql(_connectionString, ServerVersion.AutoDetect(_connectionString)));
             services.AddControllers();
             services.AddScoped<IContactReposistory, ContactReposistory>();
         }
