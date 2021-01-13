@@ -27,7 +27,28 @@ namespace ContactInfoApi
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<ContactInfo>(entity =>
+            #region MySql code first approach
+            //Run below command in Package Manager Console to create and update database.
+            //Add-Migration DBInit
+            //Update-Database
+
+            // Map entities to tables
+            modelBuilder.Entity<ContactInfo>().ToTable("Contacts");
+
+            // Configure Primary Keys
+            modelBuilder.Entity<ContactInfo>().HasKey(ug => ug.Id).HasName("CES_Contacts");
+
+            // Configure columns
+            modelBuilder.Entity<ContactInfo>().Property(ug => ug.Id).HasColumnType("int").UseMySqlIdentityColumn().IsRequired();
+            modelBuilder.Entity<ContactInfo>().Property(ug => ug.FirstName).HasColumnType("varchar(45)").IsRequired();
+            modelBuilder.Entity<ContactInfo>().Property(ug => ug.LastName).HasColumnType("varchar(45)").IsRequired();
+            modelBuilder.Entity<ContactInfo>().Property(ug => ug.MobileNumber).HasColumnType("varchar(45)").IsRequired(false);
+            modelBuilder.Entity<ContactInfo>().Property(ug => ug.EmailId).HasColumnType("varchar(45)").IsRequired(true);
+
+            #endregion
+
+            //Created entity using scaffolding
+            /*modelBuilder.Entity<ContactInfo>(entity =>
             {
                 entity.ToTable("contacts");
 
@@ -56,10 +77,10 @@ namespace ContactInfoApi
                     .HasCollation("utf8_bin");
             });
 
-            OnModelCreatingPartial(modelBuilder);
+            OnModelCreatingPartial(modelBuilder);*/
         }
 
-        partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+        //partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
         #endregion
     }
 }
