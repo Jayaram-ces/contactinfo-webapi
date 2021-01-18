@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace ContactInfoApi.Migrations
+namespace ContactInfoApi.Migrations.ContactInfo
 {
     [DbContext(typeof(ContactInfoContext))]
     partial class ContactInfoContextModelSnapshot : ModelSnapshot

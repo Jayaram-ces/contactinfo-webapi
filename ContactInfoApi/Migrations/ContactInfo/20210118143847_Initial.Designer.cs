@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace ContactInfoApi.Migrations
+namespace ContactInfoApi.Migrations.ContactInfo
 {
     [DbContext(typeof(ContactInfoContext))]
-    [Migration("20210113160053_DBInit")]
-    partial class DBInit
+    [Migration("20210118143847_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

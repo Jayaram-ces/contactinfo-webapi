@@ -1,5 +1,6 @@
 ﻿using ContactInfoApi.Model;
 using ContactInfoApi.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace ContactInfoApi.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class ContactInfoController : ControllerBase
