@@ -31,13 +31,14 @@ namespace ContactInfoApi
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // Uncomment when need to use InMemoryDatabase
             //services.AddDbContext<ContactInfoContext>(opt => opt.UseInMemoryDatabase("ContactDB"));
             string _connectionString = Configuration.GetConnectionString("ContactContext");
             services.AddDbContext<ContactInfoContext>(options => options.UseMySql(_connectionString, ServerVersion.AutoDetect(_connectionString)));
             // For Authentication & Authorization
             services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(_connectionString, ServerVersion.AutoDetect(_connectionString)));
             services.AddControllers();
-            services.AddScoped<IContactReposistory, ContactReposistory>();
+            services.AddScoped<IContactRepository, ContactRepository>();
 
             //For Identity
             services.AddIdentity<ApplicationUser, IdentityRole>()

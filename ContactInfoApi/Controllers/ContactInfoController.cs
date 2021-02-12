@@ -1,11 +1,11 @@
 ﻿using ContactInfoApi.Model;
 using ContactInfoApi.Repository;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace ContactInfoApi.Controllers
@@ -15,148 +15,147 @@ namespace ContactInfoApi.Controllers
     [Route("[controller]")]
     public class ContactInfoController : ControllerBase
     {
-        private IContactReposistory contactReposistory;
-
-        public ContactInfoController(IContactReposistory _contactReposistory)
+        private IContactRepository _contactService;
+        private readonly ILogger<ContactInfoController> _logger;
+        public ContactInfoController(ILogger<ContactInfoController> logger, IContactRepository contactRepository)
         {
-            contactReposistory = _contactReposistory;
+            _logger = logger;
+            _contactService = contactRepository;
             
         }
 
+        /// <summary>
+        /// Add contact to the directory
+        /// </summary>
+        /// <param name="contactInfoModel"></param>
+        /// <returns></returns>
         [HttpPost]
-        [Route("AddContact")]
-        public async Task<IActionResult> AddContact([FromBody] ContactInfo contact)
+        [ProducesResponseType(typeof(SerializableError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> AddContact([FromBody] ContactInfoModel contactInfoModel)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    if (contact?.EmailId == null)
-                        return BadRequest("The email address is required");
-                    var contactId = await contactReposistory.AddContact(contact);
-                    if (contactId > 0)
-                    {
-                        return Ok("Contact added successfully");
-                    }
-                    else
-                    {
-                        return NotFound();
-                    }
-                }
-                catch (Exception ex)
-                {
-
-                    return BadRequest();
-                }
+                return BadRequest(ModelState);
             }
-            return BadRequest();
+            
+            try
+            {
+                await _contactService.AddAsync(contactInfoModel);
+                return Ok("Contact added successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Adding contact to directary failed.");
+                _logger.LogCritical(ex, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
 
+        /// <summary>
+        /// Get contacts from the directory
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
-        [Route("GetContacts")]
+        [ProducesResponseType(typeof(IEnumerable<ContactInfoModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetContacts()
         {
             try
             {
-                var contacts = await contactReposistory.GetContacts();
-                if (contacts == null)
-                {
-                    return NotFound();
-                }
-
-                return Ok(contacts);
+                var result = await _contactService.GetContactsAsync();
+                return Ok(result);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return BadRequest();
+                _logger.LogInformation("Retrieving contacts failed.");
+                _logger.LogCritical(ex, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
+        /// <summary>
+        /// Get contact by Id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
-        [Route("GetContact")]
-        public async Task<IActionResult> GetContact(int? id)
+        [Route("{id}")]
+        [ProducesResponseType(typeof(ContactInfoModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetContact([FromRoute] int id)
         {
-            if (id == null)
-            {
-                return BadRequest();
-            }
-
             try
             {
-                var contact = await contactReposistory.GetContact(id);
+                var contact = await _contactService.GetContactAsync(id);
 
                 if (contact == null)
                 {
-                    return NotFound();
+                    return NotFound("Not found in the directory.");
                 }
 
                 return Ok(contact);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return BadRequest();
+                _logger.LogInformation("Failed to retrieve the contact.");
+                _logger.LogCritical(ex, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
+        /// <summary>
+        /// Update contact in the directory
+        /// </summary>
+        /// <param name="contactInfoModel"></param>
+        /// <returns></returns>
         [HttpPut]
-        [Route("UpdateContact")]
-        public async Task<IActionResult> UpdateContact(int? id, [FromBody] ContactInfo contact)
+        [ProducesResponseType(typeof(SerializableError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateContact([FromBody] ContactInfoModel contactInfoModel)
         {
-            if(id == null)
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Please provide valid Id to update the contact.");
-            }
-
-            if (id != contact.Id)
-            {
-                return BadRequest("Contact was not found in database. Please check the given data.");
-            }
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    await contactReposistory.UpdateContact(contact);
-
-                    return Ok("Contact updated successfully");
-                }
-                catch (Exception ex)
-                {
-                    if (ex.GetType().FullName == "Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException")
-                    {
-                        return NotFound();
-                    }
-
-                    return BadRequest();
-                }
-            }
-
-            return BadRequest();
-        }
-
-        [HttpDelete]
-        [Route("DeleteContact")]
-        public async Task<IActionResult> DeleteContact(int? id)
-        {
-            int result = 0;
-
-            if (id == null)
-            {
-                return BadRequest();
+                return BadRequest(ModelState);
             }
 
             try
             {
-                result = await contactReposistory.DeleteContact(id);
-                if (result == 0)
-                {
-                    return NotFound();
-                }
+                await _contactService.UpdateAsync(contactInfoModel);
+                return Ok("Contact updated successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Failed to update the contact.");
+                _logger.LogCritical(ex, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Delete contact in the directory
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        [Route("{id}")]
+        [ProducesResponseType(typeof(ContactInfoModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteContact([FromRoute] int id)
+        {
+            try
+            {
+                await _contactService.DeleteAsync(id);
                 return Ok("Contact Deleted successfully");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                return BadRequest();
+                _logger.LogInformation("Failed to delete the contact.");
+                _logger.LogCritical(ex, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
     }

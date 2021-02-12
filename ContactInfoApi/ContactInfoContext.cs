@@ -13,7 +13,7 @@ namespace ContactInfoApi
         {
         }
 
-        public DbSet<ContactInfo> Contacts { get; set; }
+        public DbSet<ContactInfoModel> Contacts { get; set; }
 
         //Uncomment when use Mysql
         #region MySql
@@ -33,17 +33,17 @@ namespace ContactInfoApi
             //Update-Database
 
             // Map entities to tables
-            modelBuilder.Entity<ContactInfo>().ToTable("Contacts");
+            modelBuilder.Entity<ContactInfoModel>().ToTable("Contacts");
 
             // Configure Primary Keys
-            modelBuilder.Entity<ContactInfo>().HasKey(ug => ug.Id).HasName("CES_Contacts");
+            modelBuilder.Entity<ContactInfoModel>().HasKey(ug => ug.Id).HasName("CES_Contacts");
 
             // Configure columns
-            modelBuilder.Entity<ContactInfo>().Property(ug => ug.Id).HasColumnType("int").UseMySqlIdentityColumn().IsRequired();
-            modelBuilder.Entity<ContactInfo>().Property(ug => ug.FirstName).HasColumnType("varchar(45)").IsRequired();
-            modelBuilder.Entity<ContactInfo>().Property(ug => ug.LastName).HasColumnType("varchar(45)").IsRequired();
-            modelBuilder.Entity<ContactInfo>().Property(ug => ug.MobileNumber).HasColumnType("varchar(45)").IsRequired(false);
-            modelBuilder.Entity<ContactInfo>().Property(ug => ug.EmailId).HasColumnType("varchar(45)").IsRequired(true);
+            modelBuilder.Entity<ContactInfoModel>().Property(ug => ug.Id).HasColumnType("int").UseMySqlIdentityColumn().IsRequired();
+            modelBuilder.Entity<ContactInfoModel>().Property(ug => ug.FirstName).HasColumnType("varchar(45)").IsRequired();
+            modelBuilder.Entity<ContactInfoModel>().Property(ug => ug.LastName).HasColumnType("varchar(45)").IsRequired();
+            modelBuilder.Entity<ContactInfoModel>().Property(ug => ug.MobileNumber).HasColumnType("varchar(45)").IsRequired(false);
+            modelBuilder.Entity<ContactInfoModel>().Property(ug => ug.EmailId).HasColumnType("varchar(45)").IsRequired(true);
 
             #endregion
 

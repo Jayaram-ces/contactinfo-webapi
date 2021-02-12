@@ -7,7 +7,6 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -82,8 +81,8 @@ namespace ContactInfoApi.Controllers
 
                 return Ok(new
                 {
-                    token = new JwtSecurityTokenHandler().WriteToken(token)
-                    //expiration = token.ValidTo
+                    token = new JwtSecurityTokenHandler().WriteToken(token),
+                    expiration = token.ValidTo.AddMinutes(20)
                 });
             }
             return Unauthorized();

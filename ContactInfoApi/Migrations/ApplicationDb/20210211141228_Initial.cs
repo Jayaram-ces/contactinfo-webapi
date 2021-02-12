@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace ContactInfoApi.Migrations
+namespace ContactInfoApi.Migrations.ApplicationDb
 {
     public partial class Initial : Migration
     {
